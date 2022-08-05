@@ -1,1 +1,1 @@
-# QA
+The repository contains CV in English, Postman's collection with variables and test, environment with its variables as well. SQL1 document provides variety of sql queries which will be gradually supplemented with other queries.
