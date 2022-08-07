@@ -188,8 +188,13 @@ select title, author, amount,
 	(
     select max(amount)
     from book
-    ) - amount as Заказ
+    ) - amount as Заказ	
 from book
 where (select max(amount)
     from book
     ) - amount <> 0;
+	
+select author, title, price, amount,
+round(((price * amount) / (select sum(price * amount) from book)) * 100, 2) as Income_percent
+from book
+order by (price * amount) desc;
