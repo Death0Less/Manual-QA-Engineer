@@ -20,47 +20,121 @@ insert into book (title, author, price, amount) values ("Игрок", "Дост�
 select * from book;
 
 -- Выборка отдельных столбцов
-select author, title, price from book;
+select author, title, price
+from book;
 
 -- Выборка новых столбцов и присвоение им новых имен
-select title as Название, author as Автор from book;
+select title as Название, author as Автор
+from book;
 
 -- Выборка данных с созданием вычисляемого столбца
-select title, amount, amount * 1.65 as pack from book;
+select title, amount, amount * 1.65 as pack
+from book;
 
 -- Выборка данных, вычисляемые столбцы, математические функции
-select title, author, amount, ROUND((price - price*0.3), 2) as new_price from book;
-select author, title, ROUND (IF(author = "Булгаков М.А.", price + price * 0.1, IF(author = "Есенин С.А.", price + price * 0.05, price)), 2) as new_price from book;
+select title, author, amount,
+ROUND((price - price*0.3), 2) as new_price
+from book;
+select author, title,
+ROUND (IF(author = "Булгаков М.А.", price + price * 0.1, IF(author = "Есенин С.А.", price + price * 0.05, price)), 2) as new_price
+from book;
 
 -- Выборка данных по условию
-select author, title, price from book where amount < 10;
+select author, title, price
+from book
+where amount < 10;
 
 -- Выборка данных, логические операции
-select title, author, price, amount from book where (price < 500 or price > 600) and amount * price >= 5000 ;
+select title, author, price, amount
+from book
+where (price < 500 or price > 600) and amount * price >= 5000 ;
 
 -- Выборка данных, операторы BETWEEN, IN
-select title, author from book where (price between 540.50 and 800) and amount in (2, 3, 5, 7);
+select title, author
+from book
+where (price between 540.50 and 800) and amount in (2, 3, 5, 7);
 
 -- Выборка данных с сортировкой
-select author, title from book where (amount between 2 and 14) order by author desc, title asc;
+select author, title
+from book
+where (amount between 2 and 14) 
+order by author desc, title asc;
 
 -- Выборка данных, оператор LIKE
-select title, author from book where title like "%_% %_%" and author like "%С.%" order by title;
+select title, author
+from book
+where title like "%_% %_%" and author like "%С.%"
+order by title;
 
 -- Выбор уникальных элементов столбца
-select distinct amount from book;
+select distinct amount
+from book;
 
 -- Выборка данных, групповые функции SUM и COUNT
-select author, count(title) as Разлтчных_книг, sum(amount) as Количество_экзепляров from book group by author;
+select author, 
+count(title) as Разлтчных_книг,
+sum(amount) as Количество_экзепляров
+from book
+group by author;
 
 -- Выборка данных, групповые функции MIN, MAX и AVG
-select author, min(price) as Минимальная_цена, max(price) as Максимальная_цена, avg(price) as Средняя_цена from book group by author;
+select author, 
+min(price) as Минимальная_цена,
+max(price) as Максимальная_цена, avg(price) as Средняя_цена
+from book
+group by author;
 
 -- Выборка данных c вычислением, групповые функции
-select author, round(sum(amount * price), 2) as Стоимость, round(sum(((price * amount * (18/100))/(1 + 18/100))), 2) as НДС, round(sum((price * amount)/(1 + (18/100))), 2) as Стоимость_без_НДС from book group by author;
+select author, 
+round(sum(amount * price), 2) as Стоимость,
+round(sum(((price * amount * (18/100))/(1 + 18/100))), 2) as НДС, 
+round(sum((price * amount)/(1 + (18/100))), 2) as Стоимость_без_НДС 
+from book 
+group by author;
 
 -- Вычисления по таблице целиком
-select min(price) as Минимаьная_цена, max(price) as Максимальная_цена, round((avg(price)),2) as Средняя_цена from book;
+select min(price) as Минимаьная_цена,
+max(price) as Максимальная_цена,
+round((avg(price)),2) as Средняя_цена
+from book;
 
 -- Выборка данных по условию, групповые функции
-select round(avg(price), 2) as Средняя_цена, round(sum(price * amount), 2) as Стоимость from book where amount between 5 and 14;
+select round(avg(price), 2) as Средняя_цена,
+round(sum(price * amount), 2) as Стоимость
+from book
+where amount between 5 and 14;
+
+-- Выборка данных по условию, групповые функции, WHERE и HAVING
+SELECT author, 
+    SUM(price * amount) as Стоимость 
+FROM book 
+WHERE title <> 'Идиот' and title <> 'Белая гвардия' 
+GROUP BY author 
+HAVING SUM(price*amount) > 5000 
+ORDER BY Стоимость DESC;
+
+select author,
+round(sum(price * amount), 1) as Стоимость
+from book
+where amount between 10 and 15
+group by author
+having sum(price * amount) > 3500
+order by Стоимость asc;
+
+-- Вложенный запрос, возвращающий одно значение
+select title, author, price, amount
+from book
+where price = (
+select min(price) 
+from book
+);
+
+select author, title, price
+from book
+where price <= (
+select avg(price) 
+from book
+)
+order by price desc;
+
+-- Использование вложенного запроса в выражении
