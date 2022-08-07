@@ -15,9 +15,10 @@ insert into book (title, author, price, amount) values ("Братья Карам
 insert into  book (title, author, price, amount) values ("Черный человек','Есенин С.А.", Null, Null);
 insert into book (title, author, price, amount) values ("Стихотворения и поэмы", "Есенин С.А.", 650.00, 15);
 insert into book (title, author, price, amount) values ("Игрок", "Достоевский Ф.М.", 480.50, 10);
+insert into book (title, author, price, amount) values ("Евгений Онегин", "Пушкин А.С.", 610.10, 10);
 
 -- Выбор всех данных из таблицы
-select * from book;
+select * from book;	
 
 -- Выборка отдельных столбцов
 select author, title, price
@@ -106,7 +107,7 @@ where amount between 5 and 14;
 
 -- Выборка данных по условию, групповые функции, WHERE и HAVING
 SELECT author, 
-    SUM(price * amount) as Стоимость 
+SUM(price * amount) as Стоимость 
 FROM book 
 WHERE title <> 'Идиот' and title <> 'Белая гвардия' 
 GROUP BY author 
@@ -125,16 +126,70 @@ order by Стоимость asc;
 select title, author, price, amount
 from book
 where price = (
-select min(price) 
-from book
-);
+	select min(price) 
+	from book
+	);
 
 select author, title, price
 from book
 where price <= (
-select avg(price) 
-from book
-)
+	select avg(price) 
+	from book
+	)
 order by price desc;
 
 -- Использование вложенного запроса в выражении
+select author, title, price
+from book
+where (price - (
+	select min(price)
+	from book
+	)) <= 150
+order by price asc;
+
+-- Вложенный запрос, оператор IN
+select title, author, amount, price
+from book
+where author in (
+	select author
+	from book
+	group by author
+	having sum(amount) >=12
+	);
+
+select author, title, amount
+from book
+where title in (
+	select title
+	from book
+	group by amount
+	having count(amount) = 1
+	);
+
+-- Вложенный запрос, операторы ANY и ALL
+select author, title, price
+from book
+where price < any(
+	select min(price)
+from book
+group by author
+);
+
+-- Вложенный запрос после SELECT
+select title, author, amount,
+	(
+    select avg(amount)
+    from book
+    ) as Среднее_количесво
+from book
+where amount - (select avg(amount) from book) >> 3;
+
+select title, author, amount,
+	(
+    select max(amount)
+    from book
+    ) - amount as Заказ
+from book
+where (select max(amount)
+    from book
+    ) - amount <> 0;
