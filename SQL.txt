@@ -1,3 +1,9 @@
+-- Поиск баз данных
+show databases;
+
+-- Выбор базы данных
+use stepikdb;
+
 -- Создание табблицы
 create table book (
     book_id	INT PRIMARY KEY AUTO_INCREMENT,
@@ -8,14 +14,22 @@ create table book (
 );
 
 -- Заполнение таблицы значениями
-insert into book (title, author, price, amount) values ("Мастер и Маргарита", "Булгаков М.А.", 670.99, 3);
-insert into book (title, author, price, amount) values ("Белая гвардия", "Булгаков М.А.", 540.50, 5);
-insert into book (title, author, price, amount) values ("Идиот", "Достоевский Ф.М.", 460.00, 10);
-insert into book (title, author, price, amount) values ("Братья Карамазовы", "Достоевский Ф.М.", 799.01, 2);
-insert into  book (title, author, price, amount) values ("Черный человек','Есенин С.А.", Null, Null);
-insert into book (title, author, price, amount) values ("Стихотворения и поэмы", "Есенин С.А.", 650.00, 15);
-insert into book (title, author, price, amount) values ("Игрок", "Достоевский Ф.М.", 480.50, 10);
-insert into book (title, author, price, amount) values ("Евгений Онегин", "Пушкин А.С.", 610.10, 10);
+insert into book (title, author, price, amount)
+values ("Мастер и Маргарита", "Булгаков М.А.", 670.99, 3);
+insert into book (title, author, price, amount)
+values ("Белая гвардия", "Булгаков М.А.", 540.50, 5);
+insert into book (title, author, price, amount)
+values ("Идиот", "Достоевский Ф.М.", 460.00, 10);
+insert into book (title, author, price, amount)
+values ("Братья Карамазовы", "Достоевский Ф.М.", 799.01, 2);
+insert into  book (title, author, price, amount)
+values ("Черный человек','Есенин С.А.", Null, Null);
+insert into book (title, author, price, amount)
+values ("Стихотворения и поэмы", "Есенин С.А.", 650.00, 15);
+insert into book (title, author, price, amount)
+values ("Игрок", "Достоевский Ф.М.", 480.50, 10);
+insert into book (title, author, price, amount)
+values ("Евгений Онегин", "Пушкин А.С.", 610.10, 10);
 
 -- Выбор всех данных из таблицы
 select * from book;	
@@ -198,3 +212,72 @@ select author, title, price, amount,
 round(((price * amount) / (select sum(price * amount) from book)) * 100, 2) as Income_percent
 from book
 order by (price * amount) desc;
+
+-- Создание таблицы supply
+create table supply (
+    supply_id INT PRIMARY KEY AUTO_INCREMENT,
+    title varchar(50),
+    author varchar(50),
+    price decimal(8, 2),
+    amount int
+);
+
+-- Заполнение таблицы supply значениями
+insert into supply (title, author, price, amount)
+value ("Лирика", "Пастернак Б.Л.", 518.99, 2);
+insert into supply (title, author, price, amount)
+values ("Черный человек", "Есенин С.А.", 570.20, 6);
+insert into supply (title, author, price, amount)
+values ("Белая гвардия", "Булгаков М.А.", 540.50, 7);
+insert into supply (title, author, price, amount)
+values ("Идиот", "Достоевский Ф.М.", 360.80, 3);
+
+-- Добавление записей из другой таблицы
+insert into book (title, author, price, amount)
+select title, author, price, amount
+from supply
+where author not in ("Булгаков М.А.", "Достоевский Ф.М.");
+
+-- Добавление записей, вложенные запросы
+insert into book (title, author, price, amount)
+select title, author, price, amount
+from supply
+where author not in (
+    select author
+    from book
+    );
+
+-- Запросы на добавление колонки
+alter table book
+    add column buy int
+        after amount;
+
+-- Запросы на обновление
+update book
+set price = price * 0.9
+where amount between 5 and 10;
+
+update book
+set buy = 0
+where book_id = 1;
+
+update book
+set buy = 3
+where book_id = 2;
+
+update book
+set buy = 8
+where book_id = 3;
+
+update book
+set buy = 0
+where book_id = 4;
+
+update book
+set buy = 18
+where book_id = 6;
+
+-- Запросы на обновление нескольких столбцов
+update book
+set buy = if (buy > amount, amount, buy),
+    price = if (buy = 0, price * 0.9, price);
