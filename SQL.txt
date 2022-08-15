@@ -1,16 +1,23 @@
 -- Поиск баз данных
 show databases;
 
+-- Создание базы данных
+create database stepikdb;
+
 -- Выбор базы данных
 use stepikdb;
 
+-- Поиск таблицы
+show tables;
+
 -- Создание табблицы
-create table book (
-    book_id	INT PRIMARY KEY AUTO_INCREMENT,
-    title	VARCHAR(50),
-    author	VARCHAR(30),
-    price	DECIMAL(8, 2),
-    amount	INT
+create table book
+(
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    title   VARCHAR(50),
+    author  VARCHAR(30),
+    price   DECIMAL(8, 2),
+    amount  INT
 );
 
 -- Заполнение таблицы значениями
@@ -22,7 +29,7 @@ insert into book (title, author, price, amount)
 values ("Идиот", "Достоевский Ф.М.", 460.00, 10);
 insert into book (title, author, price, amount)
 values ("Братья Карамазовы", "Достоевский Ф.М.", 799.01, 2);
-insert into  book (title, author, price, amount)
+insert into book (title, author, price, amount)
 values ("Черный человек','Есенин С.А.", Null, Null);
 insert into book (title, author, price, amount)
 values ("Стихотворения и поэмы", "Есенин С.А.", 650.00, 15);
@@ -31,8 +38,9 @@ values ("Игрок", "Достоевский Ф.М.", 480.50, 10);
 insert into book (title, author, price, amount)
 values ("Евгений Онегин", "Пушкин А.С.", 610.10, 10);
 
--- Выбор всех данных из таблицы
-select * from book;	
+-- Выбор всех данных из таблицы book
+select *
+from book;
 
 -- Выборка отдельных столбцов
 select author, title, price
@@ -47,11 +55,15 @@ select title, amount, amount * 1.65 as pack
 from book;
 
 -- Выборка данных, вычисляемые столбцы, математические функции
-select title, author, amount,
-ROUND((price - price*0.3), 2) as new_price
+select title,
+       author,
+       amount,
+       ROUND((price - price * 0.3), 2) as new_price
 from book;
-select author, title,
-ROUND (IF(author = "Булгаков М.А.", price + price * 0.1, IF(author = "Есенин С.А.", price + price * 0.05, price)), 2) as new_price
+select author,
+       title,
+       ROUND(IF(author = "Булгаков М.А.", price + price * 0.1, IF(author = "Есенин С.А.", price + price * 0.05, price)),
+             2) as new_price
 from book;
 
 -- Выборка данных по условию
@@ -62,23 +74,26 @@ where amount < 10;
 -- Выборка данных, логические операции
 select title, author, price, amount
 from book
-where (price < 500 or price > 600) and amount * price >= 5000 ;
+where (price < 500 or price > 600)
+  and amount * price >= 5000;
 
 -- Выборка данных, операторы BETWEEN, IN
 select title, author
 from book
-where (price between 540.50 and 800) and amount in (2, 3, 5, 7);
+where (price between 540.50 and 800)
+  and amount in (2, 3, 5, 7);
 
 -- Выборка данных с сортировкой
 select author, title
 from book
-where (amount between 2 and 14) 
+where (amount between 2 and 14)
 order by author desc, title asc;
 
 -- Выборка данных, оператор LIKE
 select title, author
 from book
-where title like "%_% %_%" and author like "%С.%"
+where title like "%_% %_%"
+  and author like "%С.%"
 order by title;
 
 -- Выбор уникальных элементов столбца
@@ -86,50 +101,52 @@ select distinct amount
 from book;
 
 -- Выборка данных, групповые функции SUM и COUNT
-select author, 
-count(title) as Разлтчных_книг,
-sum(amount) as Количество_экзепляров
+select author,
+       count(title) as Разлтчных_книг,
+       sum(amount)  as Количество_экзепляров
 from book
 group by author;
 
 -- Выборка данных, групповые функции MIN, MAX и AVG
-select author, 
-min(price) as Минимальная_цена,
-max(price) as Максимальная_цена, avg(price) as Средняя_цена
+select author,
+       min(price) as Минимальная_цена,
+       max(price) as Максимальная_цена,
+       avg(price) as Средняя_цена
 from book
 group by author;
 
 -- Выборка данных c вычислением, групповые функции
-select author, 
-round(sum(amount * price), 2) as Стоимость,
-round(sum(((price * amount * (18/100))/(1 + 18/100))), 2) as НДС, 
-round(sum((price * amount)/(1 + (18/100))), 2) as Стоимость_без_НДС 
-from book 
+select author,
+       round(sum(amount * price), 2)                                   as Стоимость,
+       round(sum(((price * amount * (18 / 100)) / (1 + 18 / 100))), 2) as НДС,
+       round(sum((price * amount) / (1 + (18 / 100))), 2)              as Стоимость_без_НДС
+from book
 group by author;
 
 -- Вычисления по таблице целиком
-select min(price) as Минимаьная_цена,
-max(price) as Максимальная_цена,
-round((avg(price)),2) as Средняя_цена
+select min(price)             as Минимаьная_цена,
+       max(price)             as Максимальная_цена,
+       round((avg(price)), 2) as Средняя_цена
 from book;
 
 -- Выборка данных по условию, групповые функции
-select round(avg(price), 2) as Средняя_цена,
-round(sum(price * amount), 2) as Стоимость
+select round(avg(price), 2)          as Средняя_цена,
+       round(sum(price * amount), 2) as Стоимость
 from book
 where amount between 5 and 14;
 
 -- Выборка данных по условию, групповые функции, WHERE и HAVING
-SELECT author, 
-SUM(price * amount) as Стоимость 
-FROM book 
-WHERE title <> 'Идиот' and title <> 'Белая гвардия' 
-GROUP BY author 
-HAVING SUM(price*amount) > 5000 
+SELECT author,
+       SUM(price * amount) as Стоимость
+FROM book
+WHERE title <> 'Идиот'
+  and title <> 'Белая гвардия'
+GROUP BY author
+HAVING SUM(price * amount) > 5000
 ORDER BY Стоимость DESC;
 
 select author,
-round(sum(price * amount), 1) as Стоимость
+       round(sum(price * amount), 1) as Стоимость
 from book
 where amount between 10 and 15
 group by author
@@ -139,98 +156,93 @@ order by Стоимость asc;
 -- Вложенный запрос, возвращающий одно значение
 select title, author, price, amount
 from book
-where price = (
-	select min(price) 
-	from book
-	);
+where price = (select min(price)
+               from book);
 
 select author, title, price
 from book
-where price <= (
-	select avg(price) 
-	from book
-	)
+where price <= (select avg(price)
+                from book)
 order by price desc;
 
 -- Использование вложенного запроса в выражении
 select author, title, price
 from book
-where (price - (
-	select min(price)
-	from book
-	)) <= 150
+where (price - (select min(price)
+                from book)) <= 150
 order by price asc;
 
 -- Вложенный запрос, оператор IN
 select title, author, amount, price
 from book
-where author in (
-	select author
-	from book
-	group by author
-	having sum(amount) >=12
-	);
+where author in (select author
+                 from book
+                 group by author
+                 having sum(amount) >= 12);
 
 select author, title, amount
 from book
-where title in (
-	select title
-	from book
-	group by amount
-	having count(amount) = 1
-	);
+where title in (select title
+                from book
+                group by amount
+                having count(amount) = 1);
 
 -- Вложенный запрос, операторы ANY и ALL
 select author, title, price
 from book
-where price < any(
-	select min(price)
-from book
-group by author
-);
+where price < any (select min(price)
+                   from book
+                   group by author);
 
 -- Вложенный запрос после SELECT
-select title, author, amount,
-	(
-    select avg(amount)
-    from book
-    ) as Среднее_количесво
+select title,
+       author,
+       amount,
+       (select avg(amount)
+        from book) as Среднее_количесво
 from book
 where amount - (select avg(amount) from book) >> 3;
 
-select title, author, amount,
-	(
-    select max(amount)
-    from book
-    ) - amount as Заказ	
+select title,
+       author,
+       amount,
+       (select max(amount)
+        from book) - amount as Заказ
 from book
 where (select max(amount)
-    from book
-    ) - amount <> 0;
-	
-select author, title, price, amount,
-round(((price * amount) / (select sum(price * amount) from book)) * 100, 2) as Income_percent
+       from book) - amount <> 0;
+
+select author,
+       title,
+       price,
+       amount,
+       round(((price * amount) / (select sum(price * amount) from book)) * 100, 2) as Income_percent
 from book
 order by (price * amount) desc;
 
 -- Создание таблицы supply
-create table supply (
+create table supply
+(
     supply_id INT PRIMARY KEY AUTO_INCREMENT,
-    title varchar(50),
-    author varchar(50),
-    price decimal(8, 2),
-    amount int
+    title     varchar(50),
+    author    varchar(50),
+    price     decimal(8, 2),
+    amount    int
 );
 
 -- Заполнение таблицы supply значениями
 insert into supply (title, author, price, amount)
-value ("Лирика", "Пастернак Б.Л.", 518.99, 2);
+    value ("Лирика", "Пастернак Б.Л.", 518.99, 2);
 insert into supply (title, author, price, amount)
 values ("Черный человек", "Есенин С.А.", 570.20, 6);
 insert into supply (title, author, price, amount)
 values ("Белая гвардия", "Булгаков М.А.", 540.50, 7);
 insert into supply (title, author, price, amount)
 values ("Идиот", "Достоевский Ф.М.", 360.80, 3);
+
+-- Выбор всех данных из таблицы supply
+select *
+from supply;
 
 -- Добавление записей из другой таблицы
 insert into book (title, author, price, amount)
@@ -242,10 +254,8 @@ where author not in ("Булгаков М.А.", "Достоевский Ф.М.")
 insert into book (title, author, price, amount)
 select title, author, price, amount
 from supply
-where author not in (
-    select author
-    from book
-    );
+where author not in (select author
+                     from book);
 
 -- Запросы на добавление колонки
 alter table book
@@ -279,5 +289,35 @@ where book_id = 6;
 
 -- Запросы на обновление нескольких столбцов
 update book
-set buy = if (buy > amount, amount, buy),
-    price = if (buy = 0, price * 0.9, price);
+set buy   = if(buy > amount, amount, buy),
+    price = if(buy = 0, price * 0.9, price);
+
+-- Запросы на обновление нескольких таблиц
+update book, supply
+set book.amount = book.amount + supply.amount,
+    book.price  = (book.price + supply.price) / 2
+where book.title = supply.title
+  and book.author = supply.author;
+
+-- Запросы на удаление
+delete
+from supply
+where author in
+      (select author
+       from book
+       group by author
+       having sum(amount) > 10);
+
+-- Запросы на создание таблицы
+create table ordering as
+select author,
+       title,
+       (select round(avg(amount), 2)
+        from book) as amount
+from book
+where amount < (select round(avg(amount), 2) from book);
+
+update book
+set price = round(price * 0.95, 2)
+where author = "Есенин С.А." and amount in (
+    select * from (select max(amount) from book) as max_price);
