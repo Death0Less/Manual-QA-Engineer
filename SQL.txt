@@ -464,6 +464,9 @@ group by name, number_plate, violation
 having count(number_plate) >= 2
 order by name, number_plate, violation;
 
+select *
+from fine;
+
 -- В таблице fine увеличить в два раза сумму неоплаченных штрафов для отобранных на предыдущем шаге записей
 -- 1 вариент решения задачи
 update fine,
@@ -536,3 +539,204 @@ where date_payment is null;
 delete
 from fine
 where date_violation < '2020-02-01';
+
+-- Создание таблицы author
+create table author
+(
+    author_id   INT PRIMARY KEY AUTO_INCREMENT,
+    name_author VARCHAR(50)
+);
+
+-- Заполнение таблицы author
+insert into author (name_author)
+values ('Булгаков М.А.');
+insert into author (name_author)
+values ('Достоевский Ф.М.');
+insert into author (name_author)
+values ('Есенин С.А.');
+insert into author (name_author)
+values ('Пастернак Б.Л.');
+
+create table genre
+(
+    genre_id   INT PRIMARY KEY AUTO_INCREMENT,
+    name_genre VARCHAR(30)
+);
+
+-- Создание таблицы book с двумя foreign key
+CREATE TABLE book
+(
+    book_id   INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(50),
+    author_id INT NOT NULL,
+    genre_id  INT,
+    price     DECIMAL(8, 2),
+    amount    INT,
+    FOREIGN KEY (author_id) REFERENCES author (author_id),
+    FOREIGN KEY (genre_id) REFERENCES genre (genre_id)
+);
+
+drop table book;
+
+-- Создание таблицы book с указанием действий, осуществляемых при удалении записи главной таблицы
+CREATE TABLE book
+(
+    book_id   INT PRIMARY KEY AUTO_INCREMENT,
+    title     VARCHAR(50),
+    author_id INT NOT NULL,
+    genre_id  INT,
+    price     DECIMAL(8, 2),
+    amount    INT,
+    FOREIGN KEY (author_id) REFERENCES author (author_id) on delete cascade,
+    FOREIGN KEY (genre_id) REFERENCES genre (genre_id) on delete set null
+);
+
+
+insert into genre (name_genre) value ('Роман');
+insert into genre (name_genre) value ('Поэзия');
+
+select *
+from genre;
+select *
+from author;
+select *
+from book;
+
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Мастер и маргарита', 1, 1, 670.99, 3);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Белая гвардия', 1, 1, 540.50, 5);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Идиот', 2, 1, 460.00, 10);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Братья Карамазовы', 2, 1, 799.01, 3);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Игрок', 2, 1, 480.50, 10);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Стихотворения и поэмы', 3, 2, 650.00, 15);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Черный человек', 3, 2, 570.20, 6);
+insert into book (title, author_id, genre_id, price, amount)
+    value ('Лирика', 4, 2, 518.99, 2);
+
+create table author
+(
+    author_id   int primary key auto_increment,
+    name_author varchar(50)
+);
+
+insert into author (name_author)
+values ('Булгаков М.А.');
+insert into author (name_author)
+values ('Достоевский Ф.М.');
+insert into author (name_author)
+values ('Есенин С.А.');
+insert into author (name_author)
+values ('Пастернак Б.Л.');
+insert into author (name_author)
+values ('Лермонтов М.Ю.');
+
+create table genre
+(
+    genre_id   int primary key auto_increment,
+    name_genre varchar(50)
+);
+
+insert into genre (name_genre)
+values ('Роман');
+insert into genre (name_genre)
+values ('Поэзия');
+insert into genre (name_genre)
+values ('Приключения');
+
+create table book
+(
+    book_id   int primary key auto_increment,
+    title     varchar(50),
+    author_id int not null,
+    genre_id  int,
+    price     decimal(8, 2),
+    amount    int,
+    foreign key (author_id) references author (author_id) on delete cascade,
+    foreign key (genre_id) references genre (genre_id) on delete set null
+);
+
+insert into book (title, author_id, genre_id, price, amount)
+values ('Мастер и Маргарита', 1, 1, 670.99, 3);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Белая гвардия', 1, 1, 540.50, 5);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Идиот', 2, 1, 460.00, 10);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Братья Карамазовы', 2, 1, 799.01, 3);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Игрок', 2, 1, 480.50, 10);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Стихотворения и поэмы', 3, 2, 650.00, 15);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Черный человек', 3, 2, 570.20, 6);
+insert into book (title, author_id, genre_id, price, amount)
+values ('Лирика', 4, 2, 518.99, 2);
+
+-- Соединение INNER JOIN
+select title,
+       name_genre,
+       price
+from book
+         inner join genre
+                    on book.genre_id = genre.genre_id
+where book.amount > 8
+order by price desc;
+
+-- Внешнее соединение LEFT и RIGHT OUTER JOIN
+select name_genre
+from genre as g
+         left join book as b
+                   on g.genre_id = b.genre_id
+where b.genre_id is null;
+
+-- Перекрестное соединение CROSS JOIN
+create table city
+(
+    city_id   int primary key auto_increment,
+    name_city varchar(50)
+);
+
+insert into city (name_city)
+values ('Москва');
+insert into city (name_city)
+values ('Санкт-Петербург');
+insert into city (name_city)
+values ('Владивосток');
+
+select name_city,
+       name_author,
+       DATE_ADD('2020-01-01', interval floor(rand() * (365 - 1) + 1) DAY) as Дата
+from city
+         cross join author
+order by name_city, Дата desc;
+
+-- Запросы на выборку из нескольких таблиц
+select name_genre,
+       title,
+       name_author
+from genre
+         inner join book
+                    on genre.genre_id = book.genre_id
+         inner join author
+                    on author.author_id = book.author_id
+where name_genre like 'роман'
+order by title;
+
+select name_author, sum(amount) as Количество
+from author
+         left join book
+                   on author.author_id = book.author_id
+group by name_author
+having Количество < 10
+    or count(title) = 0
+order by Количество asc;
+
+-- Запросы для нескольких таблиц со вложенными запросами
+
+show columns from book;
