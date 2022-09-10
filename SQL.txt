@@ -828,3 +828,188 @@ from author as a
     and b.genre_id = g.genre_id
 group by name_author, name_genre
 order by name_author;
+
+insert into supply (title, author, price, amount)
+values ('Доктор Живаго', 'Пастернак Б.Л.', 380.80, 4);
+insert into supply (title, author, price, amount)
+values ('Черный человек', 'Есенин С.А.', 570.20, 6);
+insert into supply (title, author, price, amount)
+values ('Белая гвардия', 'Булгаков М.А.', 540.50, 7);
+insert into supply (title, author, price, amount)
+values ('Идиот', 'Достоевский Ф.М.', 360.80, 3);
+insert into supply (title, author, price, amount)
+values ('Стихотворения и поэмы', 'Лермонтов М.Ю.', 255.90, 4);
+insert into supply (title, author, price, amount)
+values ('Остров сокровищ', 'Стивенсон Р.Л.', 599.99, 5);
+
+-- ЗАПРОСЫ НА ОБНОВЛЕНИЕ, СВЯЗАННЫЕ ТАБЛИЦЫ
+-- Для книг, которые уже есть на складе (в таблице book) по той же цене, что и в поставке (supply),
+-- увеличить количество на значение, указанное в поставке, а также обнулить количество этих книг в поставке.
+update book
+    inner join author on book.author_id = author.author_id
+    inner join supply on book.title = supply.title
+        and supply.author = author.name_author
+set book.amount   = book.amount + supply.amount,
+    supply.amount = 0
+where book.price = supply.price;
+
+-- Для книг, которые уже есть на складе (в таблице book), но по другой цене, чем в поставке (supply),
+-- необходимо в таблице book увеличить количество на значение, указанное в поставке,
+-- и пересчитать цену. А в таблице  supply обнулить количество этих книг.
+update book
+    inner join author on book.author_id = author.author_id
+    inner join supply on book.title = supply.title
+        and supply.author = author.name_author
+set book.amount   = book.amount + supply.amount,
+    book.price    = (((book.price * book.amount) + (supply.price * supply.amount)) / (book.amount + supply.amount)),
+    supply.amount = 0
+where book.price <> supply.price;
+
+-- ЗАПРОСЫ НА ДОБАВЛЕНИЕ, СВЯЗАННЫЕ ТАБЛИЦЫ
+-- В таблице supply  есть новые книги, которых на складе еще не было.
+-- Прежде чем добавлять их в таблицу book,  необходимо из таблицы supplyотобрать новых авторов, если таковые имеются.
+select name_author, supply.author
+from author
+         right join supply on author.name_author = supply.author;
+
+select supply.author
+from author
+         right join supply on author.name_author = supply.author
+where name_author is null;
+
+-- Включить новых авторов в таблицу author с помощью запроса на добавление, а затем вывести все данные из таблицы author.
+-- Новыми считаются авторы, которые есть в таблице supply, но нет в таблице author.
+insert into author (name_author)
+select supply.author
+from author
+         right join supply on author.name_author = supply.author
+where author.name_author is null;
+
+-- ЗАПРОС НА ДОБАВЛЕНИЕ, СВЯЗАННЫЕ ТАБЛИЦЫ
+-- Прежде всего необходимо сформировать запрос с полями, которые соответствуют полям таблицы book,
+-- так как использовать только таблицу supply нельзя - в ней вместо кода автора стоит его фамилия.
+select title, author_id, price, amount
+from author
+         inner join supply on author.name_author = supply.author;
+
+-- Далее необходимо отобрать только новые книги из таблицы supply. Как видно из таблицы с результатами запроса,
+-- в тех записях, которые нужно добавить, значения столбца amount не равны 0
+select title, author_id, price, amount
+from author
+         inner join supply on author.name_author = supply.author
+where supply.amount <> 0;
+
+-- Добавить новые книги из таблицы supply в таблицу book на основе сформированного выше запроса. Затем вывести для просмотра таблицу book.
+insert into book (title, author_id, price, amount)
+select title, author_id, price, amount
+from author
+         inner join supply on author.name_author = supply.author
+where supply.amount <> 0;
+
+-- ЗАПРОС НА ОБНОВЛЕНИЕ, ВЛОЖЕННЫЕ ЗАПРОСЫ
+update book
+set genre_id = 1
+where book_id = 9;
+
+update book
+set genre_id = (select name_genre
+                from genre
+                where name_genre = 'Роман')
+where book_id = 9;
+
+update book
+set genre_id = (select genre_id
+                from genre
+                where name_genre = 'Поэзия')
+where title = 'Стихотворения и поэмы'
+  and author_id in (select author_id
+                    from author
+                    where name_author like 'Лермонтов%');
+
+update book
+set genre_id = (select genre_id
+                from genre
+                where name_genre = 'Приключения')
+where title = 'Остров сокровищ'
+  and author_id in (select author_id
+                    from author
+                    where name_author like 'Стивенсон%');
+
+-- КАСКАДНОЕ УДАЛЕНИЕ ЗАПИСЕЙ СВЯЗАННЫХ ТАБЛИЦ
+
+delete
+from author
+where author_id in (select author_id
+                    from book
+                    group by author_id
+                    having sum(amount) < 20);
+
+-- УДАЛЕНИЕ ЗАПИСЕЙ ГЛАВНОЙ ТАБЛИЦЫ C СОХРАНЕНИЕМ ЗАПИСЕЙ В ЗАВИСИМОЙ
+delete
+from genre
+where genre_id in (select genre_id
+                   from book
+                   group by genre_id
+                   having count(title) < 4);
+
+-- УДАЛЕНИЕ ЗАПИСЕЙ, ИСПОЛЬЗОВАНИЕ СВЯЗАННЫХ ТАБЛИЦ
+delete
+from author
+    using author
+              inner join book on author.author_id = book.author_id
+              inner join genre on book.genre_id = genre.genre_id
+where genre.name_genre = 'Поэзия';
+
+-- Проверка наличия новых авторов в таблице author
+select name_author, supply.author
+from author
+         right join supply on author.name_author = supply.author;
+
+-- Добавление новых авторов в таблицу author
+insert into author(name_author)
+select supply.author
+from author
+         right join supply on author.name_author = supply.author
+where name_author is null;
+
+insert into author(name_author)
+select author
+from supply
+where author not in (select name_author from author);
+
+-- Поиск новых книг в таблицы supply
+select title, author_id, price, amount
+from supply
+         inner join author on supply.author = author.name_author
+where supply.amount <> 0;
+
+-- Добавление книг из таблицы supply, которых нет в book
+insert into book(title, author_id, price, amount)
+select title, author_id, price, amount
+from author
+         inner join supply on supply.author = author.name_author;
+
+-- Установка жанра для книги "Доктор Живаго"
+update book
+set genre_id = (select genre_id
+                from genre
+                where name_genre = 'Роман')
+where title = 'Доктор Живаго'
+  and author_id in (select author_id
+                    from author
+                    where name_author
+                              like 'Пастернак%');
+
+-- Средняя цена кадого жанра
+select genre_id, round(avg(price), 2) as Средняя_цена
+from book
+group by genre_id;
+
+-- Изменим цену книг в book, заменив ее на среднюю цену книг того же жанра. То есть в основном запросе на изменение цены UPDATE book SET...
+-- мы пишем подзапрос,который считает среднюю цену книг каждого жанра (AVG(price), GROUP BY genre_id) и обновляет цену в зависимости от того,
+-- к какому жанру принадлежит конкретная книга.
+update book
+inner join (select genre_id, round(avg(price), 2) as AVG_Price
+from book
+group by genre_id) as new_tabel on book.genre_id = new_tabel.genre_id
+set book.price = AVG_Price;
